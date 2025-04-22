@@ -124,8 +124,6 @@ sphinxcontrib-htmlhelp==2.1.0
 sphinxcontrib-jsmath==1.0.1
 sphinxcontrib-qthelp==2.0.0
 sphinxcontrib-serializinghtml==2.0.0
-# Editable install with no version control (src==0.1.0)
--e /Users/dimi3tru/Downloads/Downloads/my_python_projects/project_for_TSUM_V2/TSUM_recommender_system
 stack-data==0.6.3
 sympy==1.13.1
 terminado==0.18.1

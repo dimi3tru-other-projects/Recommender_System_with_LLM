@@ -1,9 +1,0 @@
-Metadata-Version: 2.4
-Name: src
-Version: 0.1.0
-Summary: A recommender system for TSUM e-commerce platform to improve product recommendations.
-Author: dimi3tru
-License-File: LICENSE
-Dynamic: author
-Dynamic: license-file
-Dynamic: summary
