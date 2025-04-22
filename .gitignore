@@ -1,0 +1,33 @@
+# .gitignore config
+__pycache__/
+# *.pyc, *.pyo, *.pyd
+*.py[cod] 
+
+# env
+env
+.env
+
+# venv
+venv/
+.venv/
+
+# ipynb checkpoints
+.ipynb_checkpoints/
+/notebooks/.ipynb_checkpoints/
+
+# Other
+/models/
+downloads/
+lib/
+/data/
+var/
+.cache
+*.log
+*.db
+*.rdb
+
+# IDE
+.idea
+.vscode/
+
+.DS_Store
