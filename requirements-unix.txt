@@ -1,0 +1,35 @@
+# --- core numeric / data stack ---
+numpy
+pandas
+scipy
+scikit-learn
+
+# --- visualization ---
+matplotlib
+seaborn
+
+# --- experiment helpers ---
+tqdm          # progress bars
+ipython
+jupyter
+ipykernel
+
+# --- configuration / logging ---
+python-dotenv
+loguru
+
+# --- optional: faster event loop (not available on Windows) ---
+uvloop
+
+
+pyarrow==20.0.0
+aiohttp==3.11.18
+transformers==4.51.3
+qwen-vl-utils==0.0.11
+accelerate==1.6.0
+hf_xet==1.1.1
+einops==0.8.1
+openpyxl==3.1.5
+wandb==0.19.11
+replay-rec==0.18.1
+lightning

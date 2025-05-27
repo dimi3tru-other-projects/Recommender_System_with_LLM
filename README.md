@@ -6,50 +6,24 @@ A recommender system for TSUM e-commerce platform to improve product recommendat
 Project Organization
 ------------
 
-    ├── LICENSE
-    ├── Makefile           <- Makefile with commands like `make data` or `make train`
-    ├── README.md          <- The top-level README for developers using this project.
-    ├── data
-    │   ├── external       <- Data from third party sources.
-    │   ├── interim        <- Intermediate data that has been transformed.
-    │   ├── processed      <- The final, canonical datasets for modeling.
-    │   └── raw            <- The original, immutable data dump.
+    ├── Makefile                   <- Makefile with commands like `make create_environment`, `make requirements` or `make add_kernel`
+    ├── README.md                  <- The top-level README for developers using this project.
+    ├── data        
+    │   ├── interim                <- Intermediate data that has been transformed.
+    │   ├── processed              <- The final, canonical datasets for modeling.
+    │   └── raw                    <- The original, immutable data dump.
+    │        
+    ├── models                     <- Trained and serialized models
     │
-    ├── docs               <- A default Sphinx project; see sphinx-doc.org for details
+    ├── notebooks                  <- Jupyter notebooks (research).
     │
-    ├── models             <- Trained and serialized models, model predictions, or model summaries
+    ├── requirements-windows.txt   <- The requirements file for unix systems.
     │
-    ├── notebooks          <- Jupyter notebooks. Naming convention is a number (for ordering),
-    │                         the creator's initials, and a short `-` delimited description, e.g.
-    │                         `1.0-jqp-initial-data-exploration`.
+    ├── requirements-windows.txt   <- The requirements file for Windows.
     │
-    ├── references         <- Data dictionaries, manuals, and all other explanatory materials.
+    ├── src                        <- Source code for use in this project (scripts to download or generate data).
     │
-    ├── reports            <- Generated analysis as HTML, PDF, LaTeX, etc.
-    │   └── figures        <- Generated graphics and figures to be used in reporting
-    │
-    ├── requirements.txt   <- The requirements file for reproducing the analysis environment, e.g.
-    │                         generated with `pip freeze > requirements.txt`
-    │
-    ├── setup.py           <- makes project pip installable (pip install -e .) so src can be imported
-    ├── src                <- Source code for use in this project.
-    │   ├── __init__.py    <- Makes src a Python module
-    │   │
-    │   ├── data           <- Scripts to download or generate data
-    │   │   └── make_dataset.py
-    │   │
-    │   ├── features       <- Scripts to turn raw data into features for modeling
-    │   │   └── build_features.py
-    │   │
-    │   ├── models         <- Scripts to train models and then use trained models to make
-    │   │   │                 predictions
-    │   │   ├── predict_model.py
-    │   │   └── train_model.py
-    │   │
-    │   └── visualization  <- Scripts to create exploratory and results oriented visualizations
-    │       └── visualize.py
-    │
-    └── tox.ini            <- tox file with settings for running tox; see tox.readthedocs.io
+    └── junk                       <- Other files
 
 --------
 
@@ -57,92 +31,84 @@ Project Organization
 
 1. **Clone the repository:**
 
-   ```bash
-   git clone <your-repo-url>
-   cd TSUM_recommender_system
-   ```
+    ```bash
+    git clone https://github.com/dimi3tru-other-projects/Recommender_System_with_LLM.git
+    cd Recommender_System_with_LLM
+    ```
 
 2. **Create a Python virtual environment inside the project folder:**
 
-   ```bash
-   make create_environment
-   ```
+    ```bash
+    make create_environment
+    ```
 
-   This command:
-   - Creates a local `venv` directory
-   - Installs/upgrades `pip`, `setuptools`, and `wheel` inside it
+    This command:
+    - Creates a local `venv` directory
+    - Installs/upgrades `pip`, `setuptools`, and `wheel` inside it
 
 3. **Activate the environment:**
 
-   ```bash
-   source venv/bin/activate
-   ```
+    **_Unix_**:
+    ```bash
+    source venv/bin/activate
+    ```
 
-   > **Important**: You should keep this environment active in your terminal session whenever you want to install packages or run project code.
+    **_Windows_**:
+    ```powershell
+    venv\Scripts\Activate.ps1
+    ```
+    or
+    ```cmd
+    venv\Scripts\activate.bat
+    ```
+
+    > **Important**: You should keep this environment active in your terminal session whenever you want to install packages or run project code.
 
 4. **Install dependencies:**
 
-   ```bash
-   make requirements
-   ```
+    ```bash
+    make requirements
+    ```
 
-   By default, this will:
-   - Run `test_environment` (which calls `python3 test_environment.py`)
-   - Install packages from `requirements.txt`
-   
-   Ensure you have the environment activated so that packages are installed into `venv` rather than your system Python.
+    By default, this will:
+    - Run `test_environment` (which calls `python3 test_environment.py`)
+    - Install packages from `requirements.txt`
 
-5. **(Optional) Generate the Dataset:**
+    Ensure you have the environment activated so that packages are installed into `venv` rather than your system Python.
 
-   ```bash
-   make data
-   ```
-   This command will execute `src/data/make_dataset.py`, using `data/raw` as an input and `data/processed` as an output directory.
+5. **(Optional) Register or remove the Jupyter kernel:**
 
-6. **(Optional) Additional Make Commands:**
+    If you plan to use Jupyter notebooks in this project, you can register the current virtual environment as a Jupyter kernel:
 
-   - **Lint the code**:
-     ```bash
-     make lint
-     ```
-     Runs `flake8` on the `src/` folder (requires `flake8` in `requirements.txt`).
-     
-   - **Clean up `.pyc` files**:
-     ```bash
-     make clean
-     ```
-     Removes compiled Python files and `__pycache__` directories.
+    ```bash
+    make add_kernel
+    ```
 
-   - **Sync data to/from S3**:
-     ```bash
-     make sync_data_to_s3
-     make sync_data_from_s3
-     ```
-     Adjust the `BUCKET` and `PROFILE` variables as needed:
-     ```bash
-     make sync_data_to_s3 BUCKET=my-bucket PROFILE=my-aws-profile
-     ```
+    This will:
 
-7. **Running Notebooks:**
+    * Create a named Jupyter kernel based on your `PROJECT_NAME`
+    * Make it available in the Jupyter interface as `"Python (venv: Recommender System with LLM)"`
 
-   If you plan to use Jupyter notebooks:
-   ```bash
-   jupyter notebook notebooks/
-   ```
-   or
-   ```bash
-   jupyter lab
-   ```
-   Again, ensure you have installed Jupyter in your `venv` (e.g., `pip install jupyter`) and that the environment is activated.
+    **Note:** You should reload your IDE after this command, then you will recieve one more field.
+    ![alt text](junk/Jupyter_Kernel_1.png)
+    ![alt text](junk/Jupyter_Kernel_2.png)
 
----
+    Later, if you want to remove the kernel:
 
-## Tips for Mac MPS (Optional)
+    ```bash
+    make remove_kernel
+    ```
 
-- If you use **PyTorch** on Apple Silicon with GPU acceleration, you might install it via:
-  ```bash
-  pip install torch --index-url https://download.pytorch.org/whl/metal.html
-  ```
-  Then add `torch` to your `requirements.txt` for consistency.
+    This deletes the kernel entry from your local Jupyter configuration, but does not affect the `venv` itself.
 
----
+    > **Note:** Kernel specs are stored in:
+    >
+    > * **macOS / Linux**: `~/.local/share/jupyter/kernels/`
+    > * **Windows**: `%APPDATA%\jupyter\kernels\`
+    >
+    > The kernel simply points to your virtual environment’s Python interpreter. If you delete or move the environment, the kernel will stop working until re-registered.
+
+    _To view your current Jupyter kernels_:
+    ```bash
+    jupyter kernelspec list
+    ```

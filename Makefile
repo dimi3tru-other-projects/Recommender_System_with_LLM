@@ -1,63 +1,119 @@
-.PHONY: clean data lint requirements sync_data_to_s3 sync_data_from_s3
+.PHONY: requirements create_environment test_environment detect_platform
 
-#################################################################################
-# GLOBALS                                                                       #
-#################################################################################
+################################################################################
+# GLOBALS                                                                      #
+################################################################################
 
-PROJECT_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
-BUCKET = [OPTIONAL] your-bucket-for-syncing-data (do not include 's3://')
-PROFILE = default
-PROJECT_NAME = TSUM_recommender_system
-PYTHON_INTERPRETER = venv/bin/python
+PROJECT_NAME=Recommender System with LLM
+PYTHON_BIN?=python3.10
 
-ifeq (,$(shell which conda))
-HAS_CONDA=False
-else
-HAS_CONDA=True
+# 1. Platform‑specific variables
+ifeq ($(OS),Windows_NT)                     # Windows
+PYTHON_INTERPRETER=venv/Scripts/python.exe
+PROJECT_DIR=$(CURDIR)
+REQUIREMENTS_FILE=requirements-windows.txt
+CUDA_PRESENT=$(shell where nvcc >nul 2>&1 && echo yes || echo no)          # nvcc check
+else                                       # Unix (macOS / Linux)
+UNAME_S:=$(shell uname -s)
+PYTHON_INTERPRETER=$(shell pwd)/venv/bin/python3
+PROJECT_DIR:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
+REQUIREMENTS_FILE=requirements-unix.txt
+ifeq ($(UNAME_S),Darwin)                   # macOS (no CUDA)
+CUDA_PRESENT=no
+else                                       # Linux
+CUDA_PRESENT=$(shell command -v nvcc >/dev/null 2>&1 && echo yes || echo no)
+endif
 endif
 
-#################################################################################
-# COMMANDS                                                                      #
-#################################################################################
+# 2. PyTorch index selector
+PYTORCH_CUDA_VERSION?=cu118                # default CUDA 11.8
+ifeq ($(OS),Windows_NT)
+TORCH_INDEX:=$(if $(filter yes,$(CUDA_PRESENT)),$(PYTORCH_CUDA_VERSION),cpu)
+else
+ifeq ($(UNAME_S),Darwin)
+TORCH_INDEX:=metal
+else
+TORCH_INDEX:=$(if $(filter yes,$(CUDA_PRESENT)),$(PYTORCH_CUDA_VERSION),cpu)
+endif
+endif
 
-## Install Python Dependencies
+# 3. Conda availability
+HAS_CONDA:=$(shell conda --version >/dev/null 2>&1 && echo True || echo False)
+
+# 4. kernel name: lowercase, underscores instead of spaces (for .ipynb files)
+KERNEL_NAME=$(shell echo $(PROJECT_NAME) | tr '[:upper:]' '[:lower:]' | tr ' ' '_')
+
+################################################################################
+# COMMANDS                                                                     #
+################################################################################
+
+## Show detected configuration
+detect_platform:
+	@echo "Project name: $(PROJECT_NAME)"
+	@echo "OS:           $(OS) $(UNAME_S)"
+	@echo "Interpreter:  $(PYTHON_INTERPRETER)"
+	@echo "CUDA present: $(CUDA_PRESENT)"
+	@echo "Torch index:  $(TORCH_INDEX)"
+	@echo "Has conda:    $(HAS_CONDA)"
+	@echo "Req file:     $(REQUIREMENTS_FILE)"
+	@echo "Kernel name:  $(KERNEL_NAME)"
+
+## Create venv and upgrade basic tools
+# create_environment:
+# 	@command -v python3 >/dev/null 2>&1 || (echo "Python3 not found!" && exit 1)
+# 	python3 -m venv venv && $(PYTHON_INTERPRETER) -m pip install -U pip setuptools wheel
+
+create_environment:
+	@command -v $(PYTHON_BIN) >/dev/null 2>&1 || (echo "$(PYTHON_BIN) not found!" && exit 1)
+	$(PYTHON_BIN) -m venv venv && $(PYTHON_INTERPRETER) -m pip install -U pip setuptools wheel
+
+## Run sanity‑check script
+test_environment:
+	$(PYTHON_INTERPRETER) junk/test_environment.py
+
+## Install project requirements and matching PyTorch build
 requirements: test_environment
 	$(PYTHON_INTERPRETER) -m pip install -U pip setuptools wheel
-	$(PYTHON_INTERPRETER) -m pip install -r requirements.txt
+	$(PYTHON_INTERPRETER) -m pip install -r $(REQUIREMENTS_FILE)
+	@echo "Installing PyTorch from index '$(TORCH_INDEX)'..."
+	$(PYTHON_INTERPRETER) -m pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/$(TORCH_INDEX)
 
-## Make Dataset
-data: requirements
-	$(PYTHON_INTERPRETER) src/data/make_dataset.py data/raw data/processed
+## Register current virtual environment as a Jupyter kernel
+add_kernel:
+	$(PYTHON_INTERPRETER) -m ipykernel install --user --name=$(KERNEL_NAME) --display-name="Python (venv: $(PROJECT_NAME))"
 
-## Delete all compiled Python files
-clean:
-	find . -type f -name "*.py[co]" -delete
-	find . -type d -name "__pycache__" -delete
+## Remove registered Jupyter kernel for this project
+remove_kernel:
+	jupyter kernelspec uninstall -f $(KERNEL_NAME)
 
-## Lint using flake8
-lint:
-	flake8 src
+# ## Make Dataset
+# data: requirements
+# 	$(PYTHON_INTERPRETER) src/data/make_dataset.py data/raw data/processed
 
-## Upload Data to S3
-sync_data_to_s3:
-ifeq (default,$(PROFILE))
-	aws s3 sync data/ s3://$(BUCKET)/data/
-else
-	aws s3 sync data/ s3://$(BUCKET)/data/ --profile $(PROFILE)
-endif
+# ## Delete all compiled Python files
+# clean:
+# 	find . -type f -name "*.py[co]" -delete
+# 	find . -type d -name "__pycache__" -delete
 
-## Download Data from S3
-sync_data_from_s3:
-ifeq (default,$(PROFILE))
-	aws s3 sync s3://$(BUCKET)/data/ data/
-else
-	aws s3 sync s3://$(BUCKET)/data/ data/ --profile $(PROFILE)
-endif
+# ## Lint using flake8
+# lint:
+# 	flake8 src
 
-## Set up python interpreter environment
-create_environment:
-	python3 -m venv venv && \
-	$(PYTHON_INTERPRETER) -m pip install -U pip setuptools wheel
+# ## Upload Data to S3
+# sync_data_to_s3:
+# ifeq (default,$(PROFILE))
+# 	aws s3 sync data/ s3://$(BUCKET)/data/
+# else
+# 	aws s3 sync data/ s3://$(BUCKET)/data/ --profile $(PROFILE)
+# endif
+
+# ## Download Data from S3
+# sync_data_from_s3:
+# ifeq (default,$(PROFILE))
+# 	aws s3 sync s3://$(BUCKET)/data/ data/
+# else
+# 	aws s3 sync s3://$(BUCKET)/data/ data/ --profile $(PROFILE)
+# endif
 
 # 	python3 -m venv venv && \
 # 	. venv/bin/activate && \
@@ -77,10 +133,6 @@ create_environment:
 # 	@bash -c "source `which virtualenvwrapper.sh`;mkvirtualenv $(PROJECT_NAME) --python=$(PYTHON_INTERPRETER)"
 # 	@echo ">>> New virtualenv created. Activate with:\nworkon $(PROJECT_NAME)"
 # endif
-
-## Test python environment is setup correctly
-test_environment:
-	$(PYTHON_INTERPRETER) test_environment.py
 
 #################################################################################
 # PROJECT RULES                                                                 #
